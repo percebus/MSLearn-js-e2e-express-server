@@ -10,36 +10,37 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '16.x'
-  displayName: 'setup node@16.x'
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '16.x'
+    displayName: 'setup node@16.x'
 
-- script: npm run setup:ci --if-present
-  displayName: 'npm setup:ci'
-- script: npm ci
-  displayName: 'npm install'
-- script: ls -la node_modules
-  displayName: 'ls node_modules'
+  - script: npm run setup:ci --if-present
+    displayName: 'npm setup:ci'
+  - script: npm ci
+    displayName: 'npm install'
+  - script: ls -la node_modules
+    displayName: 'ls node_modules'
 
-- script: npm test
-  displayName: 'npm test'
+  - script: npm test
+    displayName: 'npm test'
 
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: '$(Build.SourcesDirectory)'
-    contents: '*.tgz'
-    targetFolder: $(Build.ArtifactStagingDirectory)/npm
-  displayName: 'copy *.tgz to npm'
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: '$(Build.SourcesDirectory)'
-    contents: 'package.json'
-    targetFolder: $(Build.ArtifactStagingDirectory)/npm
-  displayName: 'copy package.json to npm'
+  # TODO merge these 2 with a good ol' bash cp
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)'
+      contents: '*.tgz'
+      targetFolder: $(Build.ArtifactStagingDirectory)/npm
+    displayName: 'copy *.tgz to npm'
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)'
+      contents: 'package.json'
+      targetFolder: $(Build.ArtifactStagingDirectory)/npm
+    displayName: 'copy package.json to npm'
 
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)/npm'
-    artifactName: npm
-  displayName: 'publish'
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/npm'
+      artifactName: npm
+    displayName: 'publish'
