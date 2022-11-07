@@ -16,7 +16,7 @@ steps:
   displayName: 'setup node@16.x'
 
 - script: npm run setup:ci --if-present
-  displayName: 'npm install'
+  displayName: 'npm setup:ci'
 - script: npm ci
   displayName: 'npm install'
 - script: npm run build
@@ -25,15 +25,15 @@ steps:
 - task: CopyFiles@2
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
-    contents: '*.tgz' 
+    contents: '*.tgz'
     targetFolder: $(Build.ArtifactStagingDirectory)/npm
   displayName: 'npm/*.tgz'
 - task: CopyFiles@2
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
-    contents: 'package.json' 
+    contents: 'package.json'
     targetFolder: $(Build.ArtifactStagingDirectory)/npm
-  displayName: 'npm/package.json'   
+  displayName: 'npm/package.json'
 
 - task: PublishPipelineArtifact@1
   inputs:
