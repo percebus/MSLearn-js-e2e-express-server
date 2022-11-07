@@ -32,6 +32,11 @@ steps:
     inputs:
       testRunner: JUnit
       testResultsFiles: junit.xml
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: Cobertura
+      # summaryFileLocation: $(System.DefaultWorkingDirectory)/coverage/cobertura-coverage.xml  # TODO? or XXX?
+      summaryFileLocation: ./coverage/cobertura-coverage.xml
 
   # TODO merge these 2 with a good ol' bash cp
   - task: CopyFiles@2
