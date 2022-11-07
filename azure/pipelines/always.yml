@@ -13,7 +13,7 @@ variables:
   is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 
 stages:
-  - stage: Verify
+  - stage: Verification
     jobs:
       - job: test
         displayName: Test
@@ -70,7 +70,7 @@ stages:
               artifactName: npm
             displayName: publish
 
-  - stage: Dockerize
+  - stage: Docker
     jobs:
       - job: docker_compose
         displayName: docker compose
