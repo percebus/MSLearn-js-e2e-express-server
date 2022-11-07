@@ -1,3 +1,17 @@
+# `js-e2e-express-server`
+
+[`LICENSE`](./LICENSE.md) | [`HISTORY`](./HISTORY.md) | [`CONTRIBUTING`](./CONTRIBUTING.md) | [`CHANGELOG`](./CHANGELOG.md)
+
+## Summary
+
+JavaScript end-to-end client file upload to Azure Storage Blobs
+
+## Description
+
+This is a basic Express.js server used for JS Dev Experience documentation, in place of the previously used express generator.
+
+## Specs
+
 ---
 page_type: sample
 languages:
@@ -10,20 +24,16 @@ products:
 - vs-code
 ---
 
-# JavaScript end-to-end client file upload to Azure Storage Blobs
+## Setup
 
-This is a basic Express.js server used for JS Dev Experience documentation, in place of the previously used express generator. 
+### Dependencies
 
-1. Clone repo.
+```bash
+npm install
+```
 
-1. Install dependencies: 
+## Run
 
-    ```bash
-    npm install
-    ```
-
-1. Start project: 
-
-    ```bash
-    npm start
-    ```
+```bash
+npm start
+```
