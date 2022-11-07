@@ -69,7 +69,6 @@ jobs:
         displayName: docker compose build
 
   - job: dockerfile
-
     pool:
       vmImage: ubuntu-latest
     strategy:
@@ -80,10 +79,10 @@ jobs:
           DOCKER_TARGET: test
         release:
           DOCKER_TARGET: release
-
-    displayName: "Dockerfile:$(DOCKER_TARGET)"
+    displayName: "docker build:$(DOCKER_TARGET)"
     steps:
-      - script: -docker build . --target=$(DOCKER_TARGET)
+      - task: Docker@2
         displayName: docker build
-        services:
-          - docker
+        inputs:
+          command: build
+          arguments: --target $(DOCKER_TARGET)
