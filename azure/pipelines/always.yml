@@ -62,13 +62,11 @@ jobs:
           artifactName: npm
         displayName: publish
 
-
   - job: docker_compose
     displayName: docker compose
     steps:
       - script: docker compose build
         displayName: docker compose build
-
 
   - job: dockerfile
     displayName: Dockerfile
