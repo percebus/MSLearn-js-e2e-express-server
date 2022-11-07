@@ -31,7 +31,7 @@ steps:
     displayName: 'junit.xml'
     inputs:
       testRunner: JUnit
-      testResultsFiles: junit.xml'
+      testResultsFiles: junit.xml
 
   # TODO merge these 2 with a good ol' bash cp
   - task: CopyFiles@2
