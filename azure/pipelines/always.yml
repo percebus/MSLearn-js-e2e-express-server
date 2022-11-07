@@ -6,83 +6,92 @@
 trigger:
   - main
 
-jobs:
-  - job: test
-    displayName: Test
+variables:
+  # This allows to run experimental features
+  # Like skipping unecessary target stages
+  DOCKER_BUILDKIT: 1
+  is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 
-    pool:
-      vmImage: ubuntu-latest
+stages:
+  - stage: Verify
+    jobs:
+      - job: test
+        displayName: Test
 
-    steps:
-      - task: NodeTool@0
-        inputs:
-          versionSpec: 16.x
-        displayName: setup node@16.x
+        pool:
+          vmImage: ubuntu-latest
 
-      - script: npm run setup:ci --if-present
-        displayName: npm setup:ci
-      - script: npm ci
-        displayName: npm install
-      - script: ls -la node_modules
-        displayName: ls node_modules
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: 16.x
+            displayName: setup node@16.x
 
-      - script: npm run lint
-        displayName: npm lint
-      - script: npm test
-        displayName: npm test
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        displayName: Publish junit.xml
-        inputs:
-          testRunner: JUnit
-          testResultsFiles: junit.xml
-      - task: PublishCodeCoverageResults@1
-        displayName: Publish covertura-coverage.xml
-        inputs:
-          codeCoverageTool: Cobertura
-          summaryFileLocation: ./coverage/cobertura-coverage.xml
+          - script: npm run setup:ci --if-present
+            displayName: npm setup:ci
+          - script: npm ci
+            displayName: npm install
+          - script: ls -la node_modules
+            displayName: ls node_modules
 
-      # TODO merge these 2 with a good ol' bash cp
-      - task: CopyFiles@2
-        inputs:
-          sourceFolder: "$(Build.SourcesDirectory)"
-          contents: "*.tgz"
-          targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
-        displayName: "CopyFiles *.tgz to npm/"
-      - task: CopyFiles@2
-        inputs:
-          sourceFolder: "$(Build.SourcesDirectory)"
-          contents: package.json
-          targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
-        displayName: "CopyFiles package.json to npm/"
+          - script: npm run lint
+            displayName: npm lint
+          - script: npm test
+            displayName: npm test
+          - task: PublishTestResults@2
+            condition: succeededOrFailed()
+            displayName: Publish junit.xml
+            inputs:
+              testRunner: JUnit
+              testResultsFiles: junit.xml
+          - task: PublishCodeCoverageResults@1
+            displayName: Publish covertura-coverage.xml
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: ./coverage/cobertura-coverage.xml
 
-      - task: PublishPipelineArtifact@1
-        inputs:
-          targetPath: "$(Build.ArtifactStagingDirectory)/npm"
-          artifactName: npm
-        displayName: publish
+          # TODO merge these 2 with a good ol' bash cp
+          - task: CopyFiles@2
+            inputs:
+              sourceFolder: "$(Build.SourcesDirectory)"
+              contents: "*.tgz"
+              targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
+            displayName: "CopyFiles *.tgz to npm/"
+          - task: CopyFiles@2
+            inputs:
+              sourceFolder: "$(Build.SourcesDirectory)"
+              contents: package.json
+              targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
+            displayName: "CopyFiles package.json to npm/"
 
-  - job: docker_compose
-    displayName: docker compose
-    steps:
-      - script: docker compose build
-        displayName: docker compose build
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: "$(Build.ArtifactStagingDirectory)/npm"
+              artifactName: npm
+            displayName: publish
 
-  - job: dockerfile
-    pool:
-      vmImage: ubuntu-latest
-    strategy:
-      matrix:
-        base:
-          DOCKER_TARGET: base
-        test:
-          DOCKER_TARGET: test
-        release:
-          DOCKER_TARGET: release
-    displayName: "docker build:$(DOCKER_TARGET)"
-    steps:
-      - task: Docker@2
-        displayName: docker build
-        inputs:
-          command: build
-          arguments: --target $(DOCKER_TARGET)
+      - job: docker_compose
+        displayName: docker compose
+        steps:
+          - script: docker compose build
+            displayName: docker compose build
+
+      - job: dockerfile
+        condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+        pool:
+          vmImage: ubuntu-latest
+        strategy:
+          matrix:
+            base:
+              DOCKER_TARGET_STAGE: base
+            test:
+              DOCKER_TARGET_STAGE: test
+            release:
+              DOCKER_TARGET_STAGE: release
+        displayName: "docker build:"
+        steps:
+          - task: Docker@2
+            displayName: docker build
+            inputs:
+              command: build
+              arguments: --target $(DOCKER_TARGET_STAGE)
