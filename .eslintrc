@@ -14,7 +14,7 @@
   "ignorePatterns": [".vscode", ".devcontainer", "dist"],
   "rules": {
     "semi": ["warn", "always"],
-    "quotes": ["error", "single"],
+    "quotes": ["error", "double"],
     "no-console": [0],
     "no-return-await": ["warn"]
   }
