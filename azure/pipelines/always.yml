@@ -63,7 +63,7 @@ jobs:
         displayName: publish
 
 
-  - job: docker-compose
+  - job: docker_compose
     displayName: docker compose
     steps:
       - script: docker compose build
