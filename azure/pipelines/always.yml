@@ -70,6 +70,8 @@ stages:
               artifactName: npm
             displayName: publish
 
+  - stage: Dockerize
+    jobs:
       - job: docker_compose
         displayName: docker compose
         steps:
