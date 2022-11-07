@@ -19,21 +19,24 @@ steps:
   displayName: 'npm setup:ci'
 - script: npm ci
   displayName: 'npm install'
-- script: npm run build
-  displayName: 'npm build'
+- script: ls -la node_modules
+  displayName: 'ls node_modules'
+
+- script: npm test
+  displayName: 'npm test'
 
 - task: CopyFiles@2
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
     contents: '*.tgz'
     targetFolder: $(Build.ArtifactStagingDirectory)/npm
-  displayName: 'npm/*.tgz'
+  displayName: 'copy *.tgz to npm'
 - task: CopyFiles@2
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)'
     contents: 'package.json'
     targetFolder: $(Build.ArtifactStagingDirectory)/npm
-  displayName: 'npm/package.json'
+  displayName: 'copy package.json to npm'
 
 - task: PublishPipelineArtifact@1
   inputs:

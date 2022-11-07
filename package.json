@@ -8,11 +8,15 @@
     "test": "test"
   },
   "scripts": {
-    "build": "npm run lint",
-    "start": "node src/index.js",
-    "start:dev": "npm run lint && nodemon --exec node src/index.js --unhandled-rejections=warn",
+    "eslint": "eslint",
+    "lint:js": "npm run eslint -- src/**/*.js --fix",
+    "lint": "npm run lint:js",
+    "pretest": "npm run lint",
     "test": "jest --detectOpenHandles --coverage",
-    "lint": "eslint src/**/*.js --fix"
+    "prebuild": "npm run test",
+    "build": "echo 'FIXME: Not implemented!'",
+    "start": "node src/index.js",
+    "start:dev": "npm run lint && nodemon --exec node src/index.js --unhandled-rejections=warn"
   },
   "repository": {
     "type": "git",
