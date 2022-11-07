@@ -6,54 +6,83 @@
 trigger:
   - main
 
-pool:
-  vmImage: ubuntu-latest
+jobs:
+  - job: test
+    displayName: Test
 
-steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: 16.x
-    displayName: setup node@16.x
+    pool:
+      vmImage: ubuntu-latest
 
-  - script: npm run setup:ci --if-present
-    displayName: npm setup:ci
-  - script: npm ci
-    displayName: npm install
-  - script: ls -la node_modules
-    displayName: ls node_modules
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: 16.x
+        displayName: setup node@16.x
 
-  - script: npm run lint
-    displayName: npm lint
-  - script: npm test
-    displayName: npm test
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    displayName: Publish junit.xml
-    inputs:
-      testRunner: JUnit
-      testResultsFiles: junit.xml
-  - task: PublishCodeCoverageResults@1
-    displayName: Publish covertura-coverage.xml
-    inputs:
-      codeCoverageTool: Cobertura
-      summaryFileLocation: ./coverage/cobertura-coverage.xml
+      - script: npm run setup:ci --if-present
+        displayName: npm setup:ci
+      - script: npm ci
+        displayName: npm install
+      - script: ls -la node_modules
+        displayName: ls node_modules
 
-  # TODO merge these 2 with a good ol' bash cp
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: "$(Build.SourcesDirectory)"
-      contents: "*.tgz"
-      targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
-    displayName: "CopyFiles *.tgz to npm/"
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: "$(Build.SourcesDirectory)"
-      contents: package.json
-      targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
-    displayName: "CopyFiles package.json to npm/"
+      - script: npm run lint
+        displayName: npm lint
+      - script: npm test
+        displayName: npm test
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        displayName: Publish junit.xml
+        inputs:
+          testRunner: JUnit
+          testResultsFiles: junit.xml
+      - task: PublishCodeCoverageResults@1
+        displayName: Publish covertura-coverage.xml
+        inputs:
+          codeCoverageTool: Cobertura
+          summaryFileLocation: ./coverage/cobertura-coverage.xml
 
-  - task: PublishPipelineArtifact@1
-    inputs:
-      targetPath: "$(Build.ArtifactStagingDirectory)/npm"
-      artifactName: npm
-    displayName: publish
+      # TODO merge these 2 with a good ol' bash cp
+      - task: CopyFiles@2
+        inputs:
+          sourceFolder: "$(Build.SourcesDirectory)"
+          contents: "*.tgz"
+          targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
+        displayName: "CopyFiles *.tgz to npm/"
+      - task: CopyFiles@2
+        inputs:
+          sourceFolder: "$(Build.SourcesDirectory)"
+          contents: package.json
+          targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
+        displayName: "CopyFiles package.json to npm/"
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: "$(Build.ArtifactStagingDirectory)/npm"
+          artifactName: npm
+        displayName: publish
+
+
+  - job: docker-compose
+    displayName: docker compose
+    steps:
+      - script: docker compose build
+        displayName: docker compose build
+
+
+  - job: dockerfile
+    displayName: Dockerfile
+
+    pool:
+      vmImage: ubuntu-latest
+    strategy:
+      matrix:
+        base:
+          DOCKER_TARGET: base
+        test:
+          DOCKER_TARGET: test
+        release:
+          DOCKER_TARGET: release
+    steps:
+      - script: -docker build . --target=$(DOCKER_TARGET)
+        displayName: docker build
