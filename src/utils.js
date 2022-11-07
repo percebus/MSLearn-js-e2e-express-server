@@ -22,8 +22,8 @@ const ignoreFavicon = (req, res, next) => {
 };
 const appLogger = (req, res, next) => {
   const srcIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const {method} = req;
-  const {url} = req;
+  const { method } = req;
+  const { url } = req;
   const status = res.statusCode;
 
   console.log(`${srcIp} - ${method} ${url} ${status}`);
@@ -35,7 +35,7 @@ const logErrors = (err, req, res, next) => {
   next(err);
 };
 // Route not found (404)
-const clientError404Handler = (req, res) =>{
+const clientError404Handler = (req, res) => {
   return res.status(404).send(`Cannot GET ${req.url}`);
 };
 const clientError500Handler = (err, req, res, next) => {

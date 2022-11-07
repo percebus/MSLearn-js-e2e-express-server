@@ -1,13 +1,7 @@
 {
-  "plugins": [
-    "prettier"
-  ],
+  "plugins": ["prettier"],
   "root": true,
-  "extends": [
-    "eslint:recommended",
-    "airbnb-base",
-    "prettier"
-  ],
+  "extends": ["eslint:recommended", "airbnb-base", "prettier"],
   "env": {
     "commonjs": true,
     "es2020": true,
@@ -17,25 +11,11 @@
   "parserOptions": {
     "ecmaVersion": 11
   },
-  "ignorePatterns": [
-    ".vscode",
-    ".devcontainer",
-    "dist"
-  ],
+  "ignorePatterns": [".vscode", ".devcontainer", "dist"],
   "rules": {
-    "semi": [
-      "warn",
-      "always"
-    ],
-    "quotes": [
-      "error",
-      "single"
-    ],
-    "no-console": [
-      0
-    ],
-    "no-return-await": [
-      "warn"
-    ]
+    "semi": ["warn", "always"],
+    "quotes": ["error", "single"],
+    "no-console": [0],
+    "no-return-await": ["warn"]
   }
 }
