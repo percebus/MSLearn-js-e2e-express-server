@@ -16,7 +16,7 @@
     "style": "npm run prettier:write && npm run eslint:fix",
     "lint:all": "npm run prettier:check",
     "lint": "npm run lint:all",
-    "pretest": "npm run lint",
+    "pretest": "npm run style",
     "test": "jest --detectOpenHandles --coverage",
     "prebuild": "npm run test",
     "build": "echo 'FIXME: Not implemented!'",
