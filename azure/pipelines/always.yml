@@ -16,7 +16,7 @@ variables:
   DOCKER_IMAGE_NAME: js-e2e-express-server
   DOCKER_IMAGE_TAG: $(Build.BuildId)
   DOCKER_REGISTRY_NAME: JCGuerrero.azurECR.io
-  DOCKER_REGISTRY_CONNECTION: "{{ containerRegistryConnection.Id }}"
+  DOCKER_REGISTRY_CONNECTION: ca3600b9-2bec-4f94-827d-f4b257a98804
 
 stages:
   - stage: Verification
