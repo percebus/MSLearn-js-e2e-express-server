@@ -1,14 +1,10 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
   - main
 
 variables:
   vmImage: ubuntu-latest
   is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  AZ_CONNECTION: "21bba4a3-8942-41d6-bab9-f329b5dba5bd"
   # This allows to run experimental features
   # Like skipping unecessary target stages
   DOCKER_BUILDKIT: 1
@@ -16,7 +12,7 @@ variables:
   DOCKER_IMAGE_NAME: js-e2e-express-server
   DOCKER_IMAGE_TAG: $(Build.BuildId)
   DOCKER_REGISTRY_NAME: JCGuerrero.azurECR.io
-  DOCKER_REGISTRY_CONNECTION: "ca3600b9-2bec-4f94-827d-f4b257a98804"
+  DOCKER_REGISTRY_CONNECTION: "d9fe3721-c9e6-4820-b04b-54d04033f7f4"
 
 stages:
   - stage: Verification
@@ -54,38 +50,29 @@ stages:
               codeCoverageTool: Cobertura
               summaryFileLocation: ./coverage/cobertura-coverage.xml
 
-          # TODO merge these 2 with a good ol' bash cp
-          - task: CopyFiles@2
-            inputs:
-              sourceFolder: "$(Build.SourcesDirectory)"
-              contents: "*.tgz"
-              targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
-            displayName: "CopyFiles *.tgz to npm/"
-          - task: CopyFiles@2
-            inputs:
-              sourceFolder: "$(Build.SourcesDirectory)"
-              contents: package.json
-              targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
-            displayName: "CopyFiles package.json to npm/"
-
-          - task: PublishPipelineArtifact@1
-            inputs:
-              targetPath: "$(Build.ArtifactStagingDirectory)/npm"
-              artifactName: npm
-            displayName: publish
+          # XXX not really being used
+          # - task: CopyFiles@2
+          #   inputs:
+          #     sourceFolder: "$(Build.SourcesDirectory)"
+          #     contents: "*.tgz"
+          #     targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
+          #   displayName: "CopyFiles *.tgz to npm/"
+          # - task: CopyFiles@2
+          #   inputs:
+          #     sourceFolder: "$(Build.SourcesDirectory)"
+          #     contents: package.json
+          #     targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
+          #   displayName: "CopyFiles package.json to npm/"
+          # - task: PublishPipelineArtifact@1
+          #   inputs:
+          #     targetPath: "$(Build.ArtifactStagingDirectory)/npm"
+          #     artifactName: npm
+          #   displayName: publish
 
   - stage: Docker
     jobs:
-      - job: docker_compose
-        displayName: docker compose
-        pool:
-          vmImage: $(vmImage)
-        steps:
-          - script: docker compose build
-            displayName: docker compose build
-
-      - job: dockerfile
-        condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+      - job: Dockerfile
+        # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # XXX?
         pool:
           vmImage: $(vmImage)
         strategy:
@@ -103,6 +90,15 @@ stages:
             inputs:
               command: build
               arguments: --target $(DOCKER_TARGET_STAGE)
+
+      - job: docker_compose
+        dependsOn: Dockerfile # XXX? just run in parallel
+        displayName: docker compose
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - script: docker compose build
+            displayName: docker compose build
 
   - stage: Publish
     condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
@@ -126,3 +122,19 @@ stages:
               tags: |
                 latest
                 $(DOCKER_IMAGE_TAG)
+
+  # FIXME
+  # "Error: BadRequest - The parameter LinuxFxVersion has an invalid value."
+  # - stage: Deploy
+  #   condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
+  #   jobs:
+  #     - job: AzureWebAppContainer
+  #       displayName: Azure Web App Container
+  #       steps:
+  #         - task: AzureWebAppContainer@1
+  #           displayName: "Azure Web App on Container Deploy"
+  #           inputs:
+  #             azureSubscription: $(AZ_CONNECTION)
+  #             # appName: JCGuerrero-$(DOCKER_IMG_NAME) # TODO
+  #             appName: JCGuerrero-js-e2e-express-server # XXX
+  #             imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
