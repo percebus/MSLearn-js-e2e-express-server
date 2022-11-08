@@ -7,13 +7,14 @@ trigger:
   - main
 
 variables:
+  vmImage: ubuntu-latest
   is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   # This allows to run experimental features
   # Like skipping unecessary target stages
   DOCKER_BUILDKIT: 1
-  DOCKER_FILE: Dockerfile
+  DOCKER_FILE: ./Dockerfile
   DOCKER_IMAGE_NAME: js-e2e-express-server
-  DOCKER_IMAGE_TAG: latest
+  DOCKER_IMAGE_TAG: $(Build.BuildId)
   DOCKER_REGISTRY_NAME: JCGuerrero.azurECR.io
   DOCKER_REGISTRY_CONNECTION: "{{ containerRegistryConnection.Id }}"
 
@@ -22,10 +23,8 @@ stages:
     jobs:
       - job: test
         displayName: Test
-
         pool:
-          vmImage: ubuntu-latest
-
+          vmImage: $(vmImage)
         steps:
           - task: NodeTool@0
             inputs:
@@ -79,6 +78,8 @@ stages:
     jobs:
       - job: docker_compose
         displayName: docker compose
+        pool:
+          vmImage: $(vmImage)
         steps:
           - script: docker compose build
             displayName: docker compose build
@@ -86,7 +87,7 @@ stages:
       - job: dockerfile
         # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
         pool:
-          vmImage: ubuntu-latest
+          vmImage: $(vmImage)
         strategy:
           matrix:
             # XXX? redundant, both 'test' & 'release' run this
@@ -110,6 +111,8 @@ stages:
     jobs:
       - job: dockerize
         displayName: Dockerize
+        pool:
+          vmImage: $(vmImage)
         steps:
           - task: Docker@2
             displayName: ACR Login
@@ -120,5 +123,8 @@ stages:
             displayName: docker build + push
             inputs:
               command: buildAndPush
+              dockerfile: $(DOCKER_FILE)
               repository: $(DOCKER_IMAGE_NAME)
-              tags: $(DOCKER_IMAGE_TAG)
+              tags: |
+                latest
+                $(DOCKER_IMAGE_TAG)
