@@ -72,16 +72,8 @@ stages:
 
   - stage: Docker
     jobs:
-      - job: docker_compose
-        displayName: docker compose
-        pool:
-          vmImage: $(vmImage)
-        steps:
-          - script: docker compose build
-            displayName: docker compose build
-
-      - job: dockerfile
-        condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+      - job: Dockerfile
+        # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO? or XXX?
         pool:
           vmImage: $(vmImage)
         strategy:
@@ -99,6 +91,16 @@ stages:
             inputs:
               command: build
               arguments: --target $(DOCKER_TARGET_STAGE)
+
+      - job: docker_compose
+        dependsOn: Dockerfile
+        displayName: docker compose
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - script: docker compose build
+            displayName: docker compose build
+
 
   - stage: Publish
     # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
@@ -133,5 +135,6 @@ stages:
             displayName: "Azure Web App on Container Deploy"
             inputs:
               azureSubscription: $(AZ_CONNECTION)
-              appName: JCGuerrero-$(DOCKER_IMG_NAME)
+              # appName: JCGuerrero-$(DOCKER_IMG_NAME) # TODO
+              appName: JCGuerrero-js-e2e-express-server # XXX
               imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
