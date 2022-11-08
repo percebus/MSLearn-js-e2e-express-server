@@ -100,7 +100,7 @@ stages:
               arguments: --target $(DOCKER_TARGET_STAGE)
 
   - stage: Publish
-    condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+    # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
     jobs:
       - job: dockerize
         displayName: Dockerize
@@ -123,7 +123,7 @@ stages:
                 $(DOCKER_IMAGE_TAG)
 
   - stage: Deploy
-    # condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+    # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
     jobs:
       - job: AzureWebAppContainer
         displayName: Azure Web App Container
@@ -133,5 +133,4 @@ stages:
             inputs:
               azureSubscription: $(AZ_SUBSCRIPTION)
               appName: JCGuerrero-$(DOCKER_IMG_NAME)
-              # imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
-              imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):latest
+              imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
