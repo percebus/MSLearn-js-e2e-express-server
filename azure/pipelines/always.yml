@@ -7,20 +7,24 @@ trigger:
   - main
 
 variables:
+  vmImage: ubuntu-latest
+  is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   # This allows to run experimental features
   # Like skipping unecessary target stages
   DOCKER_BUILDKIT: 1
-  is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  DOCKER_FILE: ./Dockerfile
+  DOCKER_IMAGE_NAME: js-e2e-express-server
+  DOCKER_IMAGE_TAG: $(Build.BuildId)
+  DOCKER_REGISTRY_NAME: JCGuerrero.azurECR.io
+  DOCKER_REGISTRY_CONNECTION: "ca3600b9-2bec-4f94-827d-f4b257a98804"
 
 stages:
   - stage: Verification
     jobs:
       - job: test
         displayName: Test
-
         pool:
-          vmImage: ubuntu-latest
-
+          vmImage: $(vmImage)
         steps:
           - task: NodeTool@0
             inputs:
@@ -74,6 +78,8 @@ stages:
     jobs:
       - job: docker_compose
         displayName: docker compose
+        pool:
+          vmImage: $(vmImage)
         steps:
           - script: docker compose build
             displayName: docker compose build
@@ -81,15 +87,15 @@ stages:
       - job: dockerfile
         condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
         pool:
-          vmImage: ubuntu-latest
+          vmImage: $(vmImage)
         strategy:
           matrix:
-            base:
-              DOCKER_TARGET_STAGE: base
+            # base: # XXX? redundant, both 'test' & 'release' run this
+            #   DOCKER_TARGET_STAGE: base
             test:
               DOCKER_TARGET_STAGE: test
-            release:
-              DOCKER_TARGET_STAGE: release
+            # release: # XXX? redundant, 'docker compose' & 'dockerize' would run the same
+            #   DOCKER_TARGET_STAGE: release
         displayName: "docker build:"
         steps:
           - task: Docker@2
@@ -97,3 +103,26 @@ stages:
             inputs:
               command: build
               arguments: --target $(DOCKER_TARGET_STAGE)
+
+  - stage: Publish
+    condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+    jobs:
+      - job: dockerize
+        displayName: Dockerize
+        pool:
+          vmImage: $(vmImage)
+        steps:
+          - task: Docker@2
+            displayName: ACR Login
+            inputs:
+              command: login
+              containerRegistry: $(DOCKER_REGISTRY_CONNECTION)
+          - task: Docker@2
+            displayName: docker build + push
+            inputs:
+              command: buildAndPush
+              dockerfile: $(DOCKER_FILE)
+              repository: $(DOCKER_IMAGE_NAME)
+              tags: |
+                latest
+                $(DOCKER_IMAGE_TAG)
