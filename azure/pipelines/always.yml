@@ -72,7 +72,7 @@ stages:
   - stage: Docker
     jobs:
       - job: Dockerfile
-        # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO? or XXX?
+        # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # XXX?
         pool:
           vmImage: $(vmImage)
         strategy:
@@ -92,7 +92,7 @@ stages:
               arguments: --target $(DOCKER_TARGET_STAGE)
 
       - job: docker_compose
-        dependsOn: Dockerfile
+        dependsOn: Dockerfile # XXX? just run in parallel
         displayName: docker compose
         pool:
           vmImage: $(vmImage)
@@ -101,7 +101,7 @@ stages:
             displayName: docker compose build
 
   - stage: Publish
-    # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
+    condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
     jobs:
       - job: dockerize
         displayName: Dockerize
@@ -123,16 +123,18 @@ stages:
                 latest
                 $(DOCKER_IMAGE_TAG)
 
-  - stage: Deploy
-    # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
-    jobs:
-      - job: AzureWebAppContainer
-        displayName: Azure Web App Container
-        steps:
-          - task: AzureWebAppContainer@1
-            displayName: "Azure Web App on Container Deploy"
-            inputs:
-              azureSubscription: $(AZ_CONNECTION)
-              # appName: JCGuerrero-$(DOCKER_IMG_NAME) # TODO
-              appName: JCGuerrero-js-e2e-express-server # XXX
-              imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
+  # FIXME
+  # "Error: BadRequest - The parameter LinuxFxVersion has an invalid value."
+  # - stage: Deploy
+  #   condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
+  #   jobs:
+  #     - job: AzureWebAppContainer
+  #       displayName: Azure Web App Container
+  #       steps:
+  #         - task: AzureWebAppContainer@1
+  #           displayName: "Azure Web App on Container Deploy"
+  #           inputs:
+  #             azureSubscription: $(AZ_CONNECTION)
+  #             # appName: JCGuerrero-$(DOCKER_IMG_NAME) # TODO
+  #             appName: JCGuerrero-js-e2e-express-server # XXX
+  #             imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
