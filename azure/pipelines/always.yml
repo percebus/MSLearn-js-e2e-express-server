@@ -4,6 +4,7 @@ trigger:
 variables:
   vmImage: ubuntu-latest
   is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  AZ_SUBSCRIPTION: "66a0559c-eb2a-48a3-97a2-cab4196a34fe" # TODO? mask?
   # This allows to run experimental features
   # Like skipping unecessary target stages
   DOCKER_BUILDKIT: 1
