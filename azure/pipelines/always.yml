@@ -133,6 +133,6 @@ stages:
             env:
               azureSubscription: $(AZ_SUBSCRIPTION)
             inputs:
-              azureSubscription: ${azureSubscription}
+              azureSubscription: $env:azureSubscription
               appName: JCGuerrero-$(DOCKER_IMG_NAME)
               imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
