@@ -101,7 +101,6 @@ stages:
           - script: docker compose build
             displayName: docker compose build
 
-
   - stage: Publish
     # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
     jobs:
