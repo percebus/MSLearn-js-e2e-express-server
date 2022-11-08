@@ -63,12 +63,11 @@ stages:
           #     contents: package.json
           #     targetFolder: "$(Build.ArtifactStagingDirectory)/npm"
           #   displayName: "CopyFiles package.json to npm/"
-
-          - task: PublishPipelineArtifact@1
-            inputs:
-              targetPath: "$(Build.ArtifactStagingDirectory)/npm"
-              artifactName: npm
-            displayName: publish
+          # - task: PublishPipelineArtifact@1
+          #   inputs:
+          #     targetPath: "$(Build.ArtifactStagingDirectory)/npm"
+          #     artifactName: npm
+          #   displayName: publish
 
   - stage: Docker
     jobs:
