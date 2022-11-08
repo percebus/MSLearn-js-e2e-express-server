@@ -85,18 +85,16 @@ stages:
             displayName: docker compose build
 
       - job: dockerfile
-        # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
+        condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
         pool:
           vmImage: $(vmImage)
         strategy:
           matrix:
-            # XXX? redundant, both 'test' & 'release' run this
-            # base:
+            # base: # XXX? redundant, both 'test' & 'release' run this
             #   DOCKER_TARGET_STAGE: base
             test:
               DOCKER_TARGET_STAGE: test
-            # XXX? redundant, 'dockerize' would run the same
-            # release:
+            # release: # XXX? redundant, 'docker compose' & 'dockerize' would run the same
             #   DOCKER_TARGET_STAGE: release
         displayName: "docker build:"
         steps:
@@ -107,7 +105,7 @@ stages:
               arguments: --target $(DOCKER_TARGET_STAGE)
 
   - stage: Publish
-    # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
+    condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
     jobs:
       - job: dockerize
         displayName: Dockerize
