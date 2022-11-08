@@ -11,7 +11,7 @@ variables:
   DOCKER_IMAGE_NAME: js-e2e-express-server
   DOCKER_IMAGE_TAG: $(Build.BuildId)
   DOCKER_REGISTRY_NAME: JCGuerrero.azurECR.io
-  DOCKER_REGISTRY_CONNECTION: "ca3600b9-2bec-4f94-827d-f4b257a98804"
+  DOCKER_REGISTRY_CONNECTION: "d9fe3721-c9e6-4820-b04b-54d04033f7f4"
 
 stages:
   - stage: Verification
@@ -130,9 +130,7 @@ stages:
         steps:
           - task: AzureWebAppContainer@1
             displayName: "Azure Web App on Container Deploy"
-            env:
-              azureSubscription: $(AZ_SUBSCRIPTION)
             inputs:
-              azureSubscription: $(azureSubscription)
+              azureSubscription: $(AZ_SUBSCRIPTION)
               appName: JCGuerrero-$(DOCKER_IMG_NAME)
               imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
