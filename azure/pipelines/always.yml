@@ -1,8 +1,3 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
   - main
 
@@ -126,3 +121,17 @@ stages:
               tags: |
                 latest
                 $(DOCKER_IMAGE_TAG)
+
+  - stage: Deploy
+    # condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+    jobs:
+      - job: AzureWebAppContainer
+        displayName: Azure Web App Container
+        steps:
+          - task: AzureWebAppContainer@1
+            displayName: "Azure Web App on Container Deploy"
+            inputs:
+              azureSubscription: $(AZ_SUBSCRIPTION)
+              appName: JCGuerrero-$(DOCKER_IMG_NAME)
+              # imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):$(DOCKER_IMG_TAG)
+              imageName: $(DOCKER_REGISTRY_NAME)/$(DOCKER_IMG_NAME):latest
