@@ -4,7 +4,6 @@ trigger:
 variables:
   vmImage: ubuntu-latest
   is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
-  azureSubscription: $(AZ_SUBSCRIPTION)
   # This allows to run experimental features
   # Like skipping unecessary target stages
   DOCKER_BUILDKIT: 1
@@ -131,6 +130,8 @@ stages:
         steps:
           - task: AzureWebAppContainer@1
             displayName: "Azure Web App on Container Deploy"
+            env:
+              azureSubscription: $(AZ_SUBSCRIPTION)
             inputs:
               azureSubscription: $(azureSubscription)
               appName: JCGuerrero-$(DOCKER_IMG_NAME)
