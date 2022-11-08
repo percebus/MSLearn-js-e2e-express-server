@@ -7,10 +7,15 @@ trigger:
   - main
 
 variables:
+  is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   # This allows to run experimental features
   # Like skipping unecessary target stages
   DOCKER_BUILDKIT: 1
-  is_branch_main: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
+  DOCKER_FILE: Dockerfile
+  DOCKER_IMAGE_NAME: js-e2e-express-server
+  DOCKER_IMAGE_TAG: latest
+  DOCKER_REGISTRY_NAME: JCGuerrero.azurECR.io
+  DOCKER_REGISTRY_CONNECTION: "{{ containerRegistryConnection.Id }}"
 
 stages:
   - stage: Verification
@@ -79,17 +84,19 @@ stages:
             displayName: docker compose build
 
       - job: dockerfile
-        condition: and(succeeded(), eq(variables.is_branch_main, 'true'))
+        # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
         pool:
           vmImage: ubuntu-latest
         strategy:
           matrix:
-            base:
-              DOCKER_TARGET_STAGE: base
+            # XXX? redundant, both 'test' & 'release' run this
+            # base:
+            #   DOCKER_TARGET_STAGE: base
             test:
               DOCKER_TARGET_STAGE: test
-            release:
-              DOCKER_TARGET_STAGE: release
+            # XXX? redundant, 'dockerize' would run the same
+            # release:
+            #   DOCKER_TARGET_STAGE: release
         displayName: "docker build:"
         steps:
           - task: Docker@2
@@ -97,3 +104,21 @@ stages:
             inputs:
               command: build
               arguments: --target $(DOCKER_TARGET_STAGE)
+
+  - stage: Publish
+    # condition: and(succeeded(), eq(variables.is_branch_main, 'true')) # TODO
+    jobs:
+      - job: dockerize
+        displayName: Dockerize
+        steps:
+          - task: Docker@2
+            displayName: ACR Login
+            inputs:
+              command: login
+              containerRegistry: $(DOCKER_REGISTRY_CONNECTION)
+          - task: Docker@2
+            displayName: docker build + push
+            inputs:
+              command: buildAndPush
+              repository: $(DOCKER_IMAGE_NAME)
+              tags: $(DOCKER_IMAGE_TAG)
